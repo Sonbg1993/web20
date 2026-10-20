@@ -1,6 +1,6 @@
 /**
  * Website chúc mừng 20/10 — dành tặng Thúy Hường từ Sơn
- * Phong cách sang trọng, các tab tự động chạy mượt mà trên iPhone & Web Online.
+ * Tông hồng lãng mạn, hình ảnh và âm thanh trực tuyến, tối ưu tuyệt đối trên iPhone.
  */
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -71,14 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') closeModal();
   });
 
-  // Tạm dừng khi người dùng tương tác / đọc nội dung
   const tabsEl = $('#tabs');
   tabsEl.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') holds.add('hover'); });
   tabsEl.addEventListener('pointerleave', () => holds.delete('hover'));
   tabsEl.addEventListener('pointerdown', (e) => { if (!e.target.closest('button')) holds.add('press'); });
   ['pointerup', 'pointercancel'].forEach((ev) => addEventListener(ev, () => holds.delete('press')));
 
-  // Hỗ trợ vuốt màn hình di động chuyển tab
   let sx = 0, sy = 0, st = 0;
   tabsEl.addEventListener('touchstart', (e) => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); }, { passive: true });
   tabsEl.addEventListener('touchend', (e) => {
@@ -177,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#close-modal-btn').addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-  /* ==================== GỬI TRÁI TIM (NÚT BẤM) ==================== */
+  /* ==================== GỬI TRÁI TIM ==================== */
   $('#send-love-btn').addEventListener('click', () => {
     if (reduce) return;
     const total = innerWidth < 600 ? 16 : 26, glyphs = ['♥', '♡', '♥', '✧'];
@@ -218,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     g.addColorStop(0, 'rgba(255,240,200,1)'); g.addColorStop(.25, 'rgba(216,184,120,.7)'); g.addColorStop(1, 'rgba(216,184,120,0)');
     x.fillStyle = g; x.beginPath(); x.arc(0, 0, 30, 0, 7); x.fill();
   });
-  const petalSprites = [['#e9b6c1', '#c27a90'], ['#f0c6cd', '#cf8ea0'], ['#d9a0ae', '#a9566f']].map(([a, b]) => sprite((x) => {
+  const petalSprites = [['#ffb3c1', '#ff758f'], ['#ffccd5', '#ff8fa3'], ['#ff8fa3', '#ff4d6d']].map(([a, b]) => sprite((x) => {
     const g = x.createLinearGradient(0, -28, 0, 28); g.addColorStop(0, a); g.addColorStop(1, b);
     x.fillStyle = g; x.beginPath(); x.moveTo(0, -28);
     x.bezierCurveTo(26, -14, 20, 24, 0, 28); x.bezierCurveTo(-20, 24, -26, -14, 0, -28); x.fill();
