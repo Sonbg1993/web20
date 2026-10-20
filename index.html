@@ -1,1 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Món quà nhỏ 20/10 dành tặng Thúy Hường từ Sơn">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Gửi Thúy Hường — Món quà 20/10">
+  <meta property="og:description" content="Anh có một món quà nhỏ dành riêng cho em...">
+  <meta property="og:type" content="website">
 
+  <title>Gửi Thúy Hường ❤️ 20/10</title>
+
+  <!-- Google Fonts & FontAwesome CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Style CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Canvas hiệu ứng hạt & pháo hoa -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- Audio Player -->
+  <audio id="bg-music" loop preload="auto">
+    <!-- Nhạc nền Piano lãng mạn mặc định -->
+    <source src="assets/music/piano.mp3" type="audio/mpeg">
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112188.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Controls Nhạc Float -->
+  <div class="music-control-floating hidden" id="music-control">
+    <button id="music-toggle-btn" aria-label="Bật/Tắt nhạc">
+      <i class="fa-solid fa-music"></i>
+    </button>
+  </div>
+
+  <!-- 1. MÀN HÌNH MỞ ĐẦU (ENVELOPE / GIFT) -->
+  <section id="welcome-screen" class="welcome-screen">
+    <div class="envelope-wrapper">
+      <div class="envelope" id="envelope">
+        <div class="front flap"></div>
+        <div class="front pocket"></div>
+        <div class="letter">
+          <div class="letter-preview">
+            <i class="fa-solid fa-heart heart-stamp"></i>
+            <p class="preview-text">Gửi Thúy Hường...</p>
+          </div>
+        </div>
+        <div class="hearts-burst" id="hearts-burst"></div>
+      </div>
+    </div>
+    
+    <div class="welcome-text">
+      <h2>Anh có một món quà nhỏ dành riêng cho em...</h2>
+      <button id="open-gift-btn" class="btn-primary">
+        Mở món quà của anh ❤️
+      </button>
+    </div>
+  </section>
+
+  <!-- 2. GIAO DIỆN CHÍNH -->
+  <main id="main-content" class="main-content hidden">
+
+    <!-- Header Section -->
+    <header class="hero-section">
+      <span class="tagline">Happy Vietnamese Women's Day</span>
+      <h1 class="main-title">Chúc Mừng Ngày Phụ Nữ Việt Nam 20/10</h1>
+      <h2 class="recipient-name" id="typewriter-name">Thúy Hường</h2>
+      <p class="opening-quote">
+        “Ngày đặc biệt này, anh muốn dành những điều dịu dàng nhất cho cô gái anh thương.”
+      </p>
+    </header>
+
+    <!-- Love Timer Section -->
+    <section class="section love-timer-card glass-panel">
+      <div class="section-header">
+        <i class="fa-solid fa-hourglass-half icon-gold"></i>
+        <h3>Hành Trình Mình Bên Nhau</h3>
+      </div>
+      <p class="timer-subtitle">Mỗi khoảnh khắc có em đều là điều tuyệt vời nhất</p>
+      
+      <div class="timer-grid">
+        <div class="timer-box">
+          <span id="days">00</span>
+          <label>Ngày</label>
+        </div>
+        <div class="timer-box">
+          <span id="hours">00</span>
+          <label>Giờ</label>
+        </div>
+        <div class="timer-box">
+          <span id="minutes">00</span>
+          <label>Phút</label>
+        </div>
+        <div class="timer-box">
+          <span id="seconds">00</span>
+          <label>Giây</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Photo Gallery Section -->
+    <section class="section photo-gallery">
+      <div class="section-header">
+        <i class="fa-solid fa-images icon-gold"></i>
+        <h3>Những Khoảnh Khắc Ngọt Ngào</h3>
+      </div>
+      
+      <div class="gallery-grid">
+        <div class="photo-card polaroid">
+          <div class="photo-wrapper">
+            <img src="assets/images/photo1.jpg" onerror="this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80'" alt="Kỷ niệm 1">
+          </div>
+          <p class="caption">Nụ cười rạng rỡ của em ✨</p>
+        </div>
+
+        <div class="photo-card polaroid">
+          <div class="photo-wrapper">
+            <img src="assets/images/photo2.jpg" onerror="this.src='https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=600&q=80'" alt="Kỷ niệm 2">
+          </div>
+          <p class="caption">Bên em bình yên 🌷</p>
+        </div>
+
+        <div class="photo-card polaroid">
+          <div class="photo-wrapper">
+            <img src="assets/images/photo3.jpg" onerror="this.src='https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600&q=80'" alt="Kỷ niệm 3">
+          </div>
+          <p class="caption">Chuyến đi cùng nhau 💖</p>
+        </div>
+
+        <div class="photo-card polaroid">
+          <div class="photo-wrapper">
+            <img src="assets/images/photo4.jpg" onerror="this.src='https://images.unsplash.com/photo-1494774157365-9e04c6720e47?auto=format&fit=crop&w=600&q=80'" alt="Kỷ niệm 4">
+          </div>
+          <p class="caption">Yêu em nhiều hơn mỗi ngày 💕</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wishes Card Section -->
+    <section class="section wishes-section glass-panel">
+      <div class="section-header">
+        <i class="fa-solid fa-heart icon-gold"></i>
+        <h3>Dành Riêng Cho Thúy Hường</h3>
+      </div>
+      <div class="wish-content">
+        <p>
+          Chúc cô gái bé nhỏ của anh một ngày 20/10 thật nhiều niềm vui, luôn rạng rỡ và hạnh phúc. Cảm ơn em đã xuất hiện và làm cho cuộc sống của anh trở nên dịu dàng, ấm áp hơn bao giờ hết.
+        </p>
+        <p>
+          Mong em luôn tự tin bước đi trên con đường em chọn, luôn mỉm cười vì luôn có anh ở đằng sau sẵn sàng nắm lấy tay em và cùng em vượt qua mọi điều.
+        </p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="open-secret-letter-btn" class="btn-secondary">
+          <i class="fa-solid fa-envelope-open-text"></i> Đọc lời nhắn bí mật 💌
+        </button>
+        <button id="send-love-btn" class="btn-primary">
+          <i class="fa-solid fa-paper-plane"></i> Gửi anh hàng ngàn trái tim 💖
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="signature">Mãi thương em — <span>Sơn</span> ❤️</p>
+      <p class="copyright">20/10 Special Edition</p>
+    </footer>
+
+  </main>
+
+  <!-- 3. MODAL LỜI NHẮN BÍ MẬT -->
+  <div id="secret-modal" class="modal-overlay hidden">
+    <div class="modal-card glass-panel">
+      <button id="close-modal-btn" class="close-btn">&times;</button>
+      <div class="modal-header">
+        <i class="fa-solid fa-scroll icon-gold"></i>
+        <h3>Bức Thư Tình Gửi Hường</h3>
+      </div>
+      <div class="modal-body">
+        <p>Thúy Hường thương yêu,</p>
+        <p>
+          Anh thường không quá khéo léo trong việc thể hiện cảm xúc qua lời nói, nhưng từng điều nhỏ nhặt anh làm đều muốn mang lại cho em sự ấm áp. Trang web nhỏ này anh tự tay làm từng dòng code, gửi gắm tình cảm của anh dành cho em.
+        </p>
+        <p>
+          Cảm ơn em vì đã dịu dàng, vì đã kiên nhẫn và vì đã yêu anh. Ngày 20/10 này, anh chỉ muốn chúc em luôn luôn xinh đẹp, an nhiên và không bao giờ phải lo lắng điều gì — vì luôn có Sơn ở đây chăm sóc cho em.
+        </p>
+        <p class="modal-closing">Yêu em thật nhiều! 💕</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="js/script.js"></script>
+</body>
+</html>
