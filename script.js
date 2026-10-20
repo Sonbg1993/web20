@@ -1,7 +1,4 @@
-/**
- * Website chúc mừng 20/10 — dành tặng Thúy Hường từ Sơn
- * Tông hồng lãng mạn, hình ảnh và âm thanh trực tuyến, tối ưu tuyệt đối trên iPhone.
- */
+
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ==================== CẤU HÌNH ==================== */
