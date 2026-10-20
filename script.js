@@ -1,397 +1,262 @@
 /**
- * Website Chúc Mừng 20/10 — Dành tặng Thúy Hường từ Sơn
- * Tông màu: Hồng Pastel dịu nhẹ
+ * Website chúc mừng 20/10 — dành tặng Thúy Hường từ Sơn
+ * Phong cách sang trọng, các tab tự động chạy.
  */
-
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ==========================================
-  // CONFIGURATION (CẤU HÌNH)
-  // ==========================================
+  /* ==================== CẤU HÌNH ==================== */
   const CONFIG = {
-    // Ngày bắt đầu yêu: 10/04/2026
-    loveStartDate: '2026-04-10T00:00:00',
+    loveStartDate: '2026-04-10T00:00:00',   // ngày bắt đầu yêu
     recipientName: 'Thúy Hường',
     senderName: 'Sơn'
   };
 
-  // ==========================================
-  // DOM ELEMENTS
-  // ==========================================
-  const welcomeScreen = document.getElementById('welcome-screen');
-  const envelope = document.getElementById('envelope');
-  const openGiftBtn = document.getElementById('open-gift-btn');
-  const mainContent = document.getElementById('main-content');
-  const musicControl = document.getElementById('music-control');
-  const musicToggleBtn = document.getElementById('music-toggle-btn');
-  const bgMusic = document.getElementById('bg-music');
-  const sendLoveBtn = document.getElementById('send-love-btn');
-  const openSecretModalBtn = document.getElementById('open-secret-letter-btn');
-  const closeSecretModalBtn = document.getElementById('close-modal-btn');
-  const secretModal = document.getElementById('secret-modal');
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => [...document.querySelectorAll(s)];
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let isMusicPlaying = false;
+  const welcome = $('#welcome-screen'), envelope = $('#envelope'), openBtn = $('#open-gift-btn');
+  const stage = $('#main-content'), bgMusic = $('#bg-music'), musicBtn = $('#music-toggle-btn');
+  const pauseBtn = $('#pause-btn'), modal = $('#secret-modal');
 
-  // ==========================================
-  // 1. CHUỖI SỰ KIỆN MỞ QUÀ
-  // ==========================================
-  function openEnvelopeSequence() {
+  /* ==================== CÁC TAB TỰ CHẠY ==================== */
+  const tabs = $$('.tab');
+  const navBtns = $$('#tabnav button');
+  const bars = $$('#tabnav .bar i');
+  const durs = tabs.map((t) => +t.dataset.dur || 8000);
+  const slides = $$('.slide');
+  const dots = $$('#dots i');
+  const GALLERY = 2;
+
+  let cur = -1, elapsed = 0, last = 0, started = false;
+  let userPaused = false;
+  const holds = new Set();           // 'hover', 'press', 'modal'
+  const isPaused = () => userPaused || holds.size > 0 || document.hidden;
+
+  tabs.forEach((tab) => tab.querySelectorAll('.it').forEach((el, k) => el.style.setProperty('--k', k)));
+
+  function showSlide(i) {
+    slides.forEach((s, k) => s.classList.toggle('on', k === i));
+    dots.forEach((d, k) => d.classList.toggle('on', k === i));
+  }
+
+  function setTab(n) {
+    if (n === cur) return;
+    cur = n; elapsed = 0;
+    tabs.forEach((t, i) => t.classList.toggle('active', i === n));
+    navBtns.forEach((b, i) => b.setAttribute('aria-current', i === n ? 'true' : 'false'));
+    bars.forEach((b, i) => (b.style.transform = `scaleX(${i < n ? 1 : 0})`));
+    tabs[n].scrollTop = 0;
+    if (n === GALLERY) showSlide(0);
+  }
+
+  function frame(ts) {
+    const dt = Math.min(ts - last, 100);
+    last = ts;
+    if (started && cur >= 0 && !isPaused()) {
+      elapsed += dt;
+      const p = Math.min(elapsed / durs[cur], 1);
+      bars[cur].style.transform = `scaleX(${p})`;
+      if (cur === GALLERY) showSlide(Math.min(slides.length - 1, Math.floor(p * slides.length)));
+      if (p >= 1) setTab((cur + 1) % tabs.length);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame((t) => { last = t; frame(t); });
+
+  const go = (n) => { setTab(((n % tabs.length) + tabs.length) % tabs.length); };
+  navBtns.forEach((b) => b.addEventListener('click', () => go(+b.dataset.tab)));
+  $$('#dots i').forEach((d, i) => d.addEventListener('click', () => {
+    if (cur === GALLERY) elapsed = (durs[GALLERY] * i) / slides.length + 1;
+  }));
+  document.addEventListener('keydown', (e) => {
+    if (!started) return;
+    if (e.key === 'ArrowRight') go(cur + 1);
+    if (e.key === 'ArrowLeft') go(cur - 1);
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Giữ tay/di chuột vào thì tạm dừng, thả ra thì chạy tiếp
+  const tabsEl = $('#tabs');
+  tabsEl.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') holds.add('hover'); });
+  tabsEl.addEventListener('pointerleave', () => holds.delete('hover'));
+  tabsEl.addEventListener('pointerdown', (e) => { if (!e.target.closest('button')) holds.add('press'); });
+  ['pointerup', 'pointercancel'].forEach((ev) => addEventListener(ev, () => holds.delete('press')));
+
+  // Vuốt trái/phải để đổi tab
+  let sx = 0, sy = 0, st = 0;
+  tabsEl.addEventListener('touchstart', (e) => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); }, { passive: true });
+  tabsEl.addEventListener('touchend', (e) => {
+    const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 800) go(cur + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+
+  pauseBtn.addEventListener('click', () => {
+    userPaused = !userPaused;
+    pauseBtn.classList.toggle('is-paused', userPaused);
+    pauseBtn.setAttribute('aria-label', userPaused ? 'Tiếp tục tự chuyển trang' : 'Tạm dừng tự chuyển trang');
+  });
+
+  /* ==================== MỞ QUÀ ==================== */
+  let opened = false;
+  function openGift() {
+    if (opened) return;
+    opened = true;
     envelope.classList.add('open');
+    burstFromEnvelope();
     playAudio();
-
     setTimeout(() => {
-      welcomeScreen.classList.add('fade-out');
-      mainContent.classList.remove('hidden');
-      musicControl.classList.remove('hidden');
-      
+      welcome.classList.add('fade-out');
+      stage.classList.remove('hidden');
+      started = true;
+      setTab(0);
       initLoveTimer();
-      createHeartBurst();
-    }, 1200);
+      typeName();
+    }, 1500);
+    setTimeout(() => welcome.classList.add('hidden'), 2600);
+  }
+  envelope.addEventListener('click', openGift);
+  envelope.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGift(); } });
+  openBtn.addEventListener('click', openGift);
+
+  function burstFromEnvelope() {
+    const box = $('#hearts-burst'), glyphs = ['♥', '♡', '✧', '◆'], n = 18;
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement('span');
+      const ang = (Math.PI * 2 * i) / n, dist = 70 + Math.random() * 90;
+      el.className = 'burst-heart';
+      el.textContent = glyphs[i % glyphs.length];
+      el.style.setProperty('--x', Math.cos(ang) * dist + 'px');
+      el.style.setProperty('--y', Math.sin(ang) * dist + 'px');
+      el.style.setProperty('--rot', rand(-35, 35) + 'deg');
+      box.appendChild(el);
+      setTimeout(() => el.remove(), 1600);
+    }
   }
 
-  envelope.addEventListener('click', openEnvelopeSequence);
-  openGiftBtn.addEventListener('click', openEnvelopeSequence);
-
-  // ==========================================
-  // 2. PHÁT & QUẢN LÝ ÂM NHẠC
-  // ==========================================
+  /* ==================== NHẠC ==================== */
   function playAudio() {
+    bgMusic.volume = 0;
     bgMusic.play().then(() => {
-      isMusicPlaying = true;
-      musicToggleBtn.classList.add('playing');
-    }).catch(err => {
-      console.log("Audio autoplay prevented:", err);
-    });
+      musicBtn.classList.add('playing');
+      let v = 0;
+      const f = setInterval(() => { v = Math.min(v + 0.05, 0.7); bgMusic.volume = v; if (v >= 0.7) clearInterval(f); }, 120);
+    }).catch((err) => console.log('Không thể tự phát nhạc:', err));
   }
-
-  musicToggleBtn.addEventListener('click', () => {
-    if (isMusicPlaying) {
-      bgMusic.pause();
-      musicToggleBtn.classList.remove('playing');
-      isMusicPlaying = false;
-    } else {
-      playAudio();
-    }
+  musicBtn.addEventListener('click', () => {
+    if (bgMusic.paused) playAudio();
+    else { bgMusic.pause(); musicBtn.classList.remove('playing'); }
   });
 
-  // ==========================================
-  // 3. ĐỒNG HỒ ĐẾM THỜI GIAN YÊU (Tính từ 10/04/2026)
-  // ==========================================
+  /* ==================== TÊN GÕ CHỮ ==================== */
+  function typeName() {
+    const el = $('#typewriter-name');
+    if (reduce) return;
+    const full = CONFIG.recipientName;
+    el.textContent = '';
+    el.style.minHeight = '1.1em';
+    let i = 0;
+    const tick = () => { el.textContent = full.slice(0, ++i); if (i < full.length) setTimeout(tick, 110); };
+    setTimeout(tick, 900);
+  }
+
+  /* ==================== ĐỒNG HỒ TÌNH YÊU ==================== */
   function initLoveTimer() {
-    const startDate = new Date(CONFIG.loveStartDate).getTime();
-
-    function updateTimer() {
-      const now = new Date().getTime();
-      const difference = now - startDate;
-
-      if (difference < 0) {
-        // Nếu ngày cấu hình ở tương lai
-        document.getElementById('days').innerText = '00';
-        document.getElementById('hours').innerText = '00';
-        document.getElementById('minutes').innerText = '00';
-        document.getElementById('seconds').innerText = '00';
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-      document.getElementById('days').innerText = String(days).padStart(2, '0');
-      document.getElementById('hours').innerText = String(hours).padStart(2, '0');
-      document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
-      document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
-    }
-
-    updateTimer();
-    setInterval(updateTimer, 1000);
+    const start = new Date(CONFIG.loveStartDate).getTime();
+    const set = (id, v) => { $('#' + id).textContent = String(v).padStart(2, '0'); };
+    const update = () => {
+      const diff = Math.max(0, Date.now() - start);
+      set('days', Math.floor(diff / 864e5));
+      set('hours', Math.floor((diff % 864e5) / 36e5));
+      set('minutes', Math.floor((diff % 36e5) / 6e4));
+      set('seconds', Math.floor((diff % 6e4) / 1e3));
+    };
+    update();
+    setInterval(update, 1000);
   }
 
-  // ==========================================
-  // 4. MODAL LỜI NHẮN BÍ MẬT
-  // ==========================================
-  openSecretModalBtn.addEventListener('click', () => secretModal.classList.remove('hidden'));
-  closeSecretModalBtn.addEventListener('click', () => secretModal.classList.add('hidden'));
-  secretModal.addEventListener('click', (e) => {
-    if (e.target === secretModal) secretModal.classList.add('hidden');
-  });
+  /* ==================== LỜI NHẮN BÍ MẬT ==================== */
+  function openModal() { modal.classList.remove('hidden'); holds.add('modal'); $('#close-modal-btn').focus(); }
+  function closeModal() { modal.classList.add('hidden'); holds.delete('modal'); }
+  $('#open-secret-letter-btn').addEventListener('click', openModal);
+  $('#close-modal-btn').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-  // ==========================================
-  // 5. HIỆU ỨNG CANVAS HẠT & CÁNH HOA HỒNG PASTEL
-  // ==========================================
-  const canvas = document.getElementById('particles-canvas');
-  const ctx = canvas.getContext('2d');
-
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
-
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
-
-  class Particle {
-    constructor() {
-      this.reset();
-    }
-
-    reset() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height - height;
-      this.size = Math.random() * 11 + 5;
-      this.speedY = Math.random() * 1.4 + 0.6;
-      this.speedX = Math.random() * 0.8 - 0.4;
-      this.opacity = Math.random() * 0.6 + 0.35;
-      this.rotation = Math.random() * 360;
-      this.spin = Math.random() * 2 - 1;
-      this.type = Math.random() > 0.45 ? 'petal' : 'heart';
-    }
-
-    update() {
-      this.y += this.speedY;
-      this.x += Math.sin(this.y * 0.01) + this.speedX;
-      this.rotation += this.spin;
-
-      if (this.y > height + 20) {
-        this.reset();
-        this.y = -20;
-      }
-    }
-
-    draw() {
-      ctx.save();
-      ctx.translate(this.x, this.y);
-      ctx.rotate((this.rotation * Math.PI) / 180);
-      ctx.globalAlpha = this.opacity;
-
-      if (this.type === 'petal') {
-        // Cánh hoa Pastel
-        ctx.fillStyle = '#ff8fa3';
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(-this.size, -this.size, -this.size, this.size, 0, this.size * 1.5);
-        ctx.bezierCurveTo(this.size, this.size, this.size, -this.size, 0, 0);
-        ctx.fill();
-      } else {
-        // Trái tim Hồng Pastel
-        ctx.fillStyle = '#ff758f';
-        ctx.beginPath();
-        ctx.arc(-this.size/4, -this.size/4, this.size/4, 0, Math.PI * 2);
-        ctx.arc(this.size/4, -this.size/4, this.size/4, 0, Math.PI * 2);
-        ctx.lineTo(0, this.size/2);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      ctx.restore();
-    }
-  }
-
-  const particlesArray = Array.from({ length: 35 }, () => new Particle());
-
-  function animateParticles() {
-    ctx.clearRect(0, 0, width, height);
-    particlesArray.forEach(p => {
-      p.update();
-      p.draw();
-    });
-    requestAnimationFrame(animateParticles);
-  }
-
-  animateParticles();
-
-  // ==========================================
-  // 6. HIỆU ỨNG PHÁO TIM KHI BẤM NÚT
-  // ==========================================
-  function createHeartBurst() {
-    for (let i = 0; i < 20; i++) {
+  /* ==================== GỬI TRÁI TIM ==================== */
+  $('#send-love-btn').addEventListener('click', () => {
+    if (reduce) return;
+    const total = innerWidth < 600 ? 18 : 30, glyphs = ['♥', '♡', '♥', '✧'];
+    for (let i = 0; i < total; i++) {
       setTimeout(() => {
-        const heart = document.createElement('div');
-        heart.innerHTML = '🌸';
-        heart.style.position = 'fixed';
-        heart.style.left = Math.random() * 100 + 'vw';
-        heart.style.bottom = '-20px';
-        heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
-        heart.style.zIndex = '999';
-        heart.style.pointerEvents = 'none';
-        heart.style.transition = 'transform 3s ease-out, opacity 3s ease-out';
-        
-        document.body.appendChild(heart);
-
-        setTimeout(() => {
-          heart.style.transform = `translateY(-${window.innerHeight + 50}px) rotate(${Math.random() * 360}deg)`;
-          heart.style.opacity = '0';
-        }, 50);
-
-        setTimeout(() => heart.remove(), 3200);
-      }, i * 100);
+        const el = document.createElement('span');
+        el.className = 'floating-heart' + (i % 3 === 0 ? ' rose' : '');
+        el.textContent = glyphs[i % glyphs.length];
+        el.style.left = rand(2, 96) + 'vw';
+        el.style.fontSize = rand(16, 34) + 'px';
+        el.style.animationDuration = rand(2.4, 4) + 's';
+        el.style.setProperty('--drift', rand(-80, 80) + 'px');
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 4500);
+      }, i * 70);
     }
-  }
+  });
 
-  sendLoveBtn.addEventListener('click', createHeartBurst);
+  /* ==================== BỤI VÀNG & CÁNH HOA (canvas) ==================== */
+  if (reduce) return;
+  const cv = $('#particles-canvas'), ctx = cv.getContext('2d');
+  const mobile = innerWidth < 640;
+  let W, H, dpr;
+  const resize = () => {
+    dpr = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2);
+    W = cv.width = Math.round(innerWidth * dpr);
+    H = cv.height = Math.round(innerHeight * dpr);
+  };
+  resize();
+  addEventListener('resize', resize);
 
+  const sprite = (draw, size = 64) => {
+    const c = document.createElement('canvas'); c.width = c.height = size;
+    const x = c.getContext('2d'); x.translate(size / 2, size / 2); draw(x); return c;
+  };
+  const dustSprite = sprite((x) => {
+    const g = x.createRadialGradient(0, 0, 0, 0, 0, 30);
+    g.addColorStop(0, 'rgba(255,240,200,1)'); g.addColorStop(.25, 'rgba(216,184,120,.7)'); g.addColorStop(1, 'rgba(216,184,120,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(0, 0, 30, 0, 7); x.fill();
+  });
+  const petalSprites = [['#e9b6c1', '#c27a90'], ['#f0c6cd', '#cf8ea0'], ['#d9a0ae', '#a9566f']].map(([a, b]) => sprite((x) => {
+    const g = x.createLinearGradient(0, -28, 0, 28); g.addColorStop(0, a); g.addColorStop(1, b);
+    x.fillStyle = g; x.beginPath(); x.moveTo(0, -28);
+    x.bezierCurveTo(26, -14, 20, 24, 0, 28); x.bezierCurveTo(-20, 24, -26, -14, 0, -28); x.fill();
+  }));
+
+  const makeDust = (init) => ({ kind: 0, x: rand(0, W), y: init ? rand(0, H) : H + 20 * dpr, s: rand(5, 14) * dpr, vy: -rand(.12, .4) * dpr, ph: rand(0, 6.28), tw: rand(.0008, .002), a: rand(.35, .85) });
+  const makePetal = (init) => ({ kind: 1, spr: petalSprites[Math.floor(rand(0, 3))], x: rand(0, W), y: init ? rand(-H, H) : -rand(30, 90) * dpr,
+    s: rand(12, 22) * dpr, vy: rand(.45, 1) * dpr, sway: rand(.0008, .0018), ph: rand(0, 6.28), amp: rand(.3, .9) * dpr, rot: rand(0, 6.28), vr: rand(-.01, .01), flip: rand(0, 6.28), vf: rand(.01, .025), a: rand(.35, .7) });
+  const dust = Array.from({ length: mobile ? 16 : 34 }, () => makeDust(true));
+  const petals = Array.from({ length: mobile ? 8 : 16 }, () => makePetal(true));
+
+  const loop = (t) => {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < dust.length; i++) {
+      const p = dust[i];
+      p.y += p.vy; p.x += Math.sin(t * p.tw + p.ph) * .25 * dpr;
+      if (p.y < -20 * dpr) { dust[i] = makeDust(false); continue; }
+      ctx.globalAlpha = p.a * (.55 + .45 * Math.sin(t * p.tw * 3 + p.ph));
+      ctx.setTransform(p.s / 64, 0, 0, p.s / 64, p.x, p.y);
+      ctx.drawImage(dustSprite, -32, -32);
+    }
+    for (let i = 0; i < petals.length; i++) {
+      const p = petals[i];
+      p.y += p.vy; p.x += Math.sin(t * p.sway + p.ph) * p.amp; p.rot += p.vr; p.flip += p.vf;
+      if (p.y > H + 40 * dpr) { petals[i] = makePetal(false); continue; }
+      const k = p.s / 64, f = .55 + .45 * Math.abs(Math.cos(p.flip)), c = Math.cos(p.rot) * k, s = Math.sin(p.rot) * k;
+      ctx.globalAlpha = p.a;
+      ctx.setTransform(c, s, -s * f, c * f, p.x, p.y);
+      ctx.drawImage(p.spr, -32, -32);
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
 });
-
-/* =========================================
-   ROMANTIC EFFECTS — 20/10
-   Thêm vào cuối js/script.js
-========================================= */
-
-(() => {
-    const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    if (reducedMotion) return;
-
-    // Cánh hoa hồng rơi nhẹ nhàng
-    const petals = ["🌸", "🌹", "✿", "♡"];
-    let petalTimer;
-
-    function createPetal() {
-        if (document.hidden) return;
-
-        const petal = document.createElement("span");
-        petal.className = "floating-petal";
-        petal.textContent =
-            petals[Math.floor(Math.random() * petals.length)];
-
-        const size = 12 + Math.random() * 15;
-        const duration = 9 + Math.random() * 9;
-
-        petal.style.left = Math.random() * 100 + "vw";
-        petal.style.fontSize = size + "px";
-        petal.style.animationDuration = duration + "s";
-        petal.style.setProperty(
-            "--drift",
-            (Math.random() * 180 - 90) + "px"
-        );
-        petal.style.setProperty(
-            "--rotation",
-            (180 + Math.random() * 540) + "deg"
-        );
-
-        document.body.appendChild(petal);
-
-        window.setTimeout(() => petal.remove(), duration * 1000 + 500);
-    }
-
-    function startPetals() {
-        if (petalTimer || document.hidden) return;
-
-        createPetal();
-        petalTimer = window.setInterval(createPetal, 850);
-    }
-
-    function stopPetals() {
-        window.clearInterval(petalTimer);
-        petalTimer = null;
-    }
-
-    startPetals();
-
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            stopPetals();
-        } else {
-            startPetals();
-        }
-    });
-
-    // Hiệu ứng trái tim bay khi nhấn nút gửi yêu thương
-    const loveButton = document.getElementById("send-love-btn");
-
-    if (loveButton) {
-        loveButton.addEventListener("click", () => {
-            const hearts = ["💗", "💖", "💕", "❤️", "💘"];
-            const total = window.innerWidth < 600 ? 18 : 32;
-
-            for (let i = 0; i < total; i++) {
-                window.setTimeout(() => {
-                    const heart = document.createElement("span");
-                    heart.className = "floating-heart";
-                    heart.textContent =
-                        hearts[Math.floor(Math.random() * hearts.length)];
-
-                    heart.style.left = Math.random() * 100 + "vw";
-                    heart.style.fontSize = (15 + Math.random() * 22) + "px";
-                    heart.style.animationDuration =
-                        (2.2 + Math.random() * 1.8) + "s";
-
-                    heart.style.setProperty(
-                        "--drift",
-                        (Math.random() * 160 - 80) + "px"
-                    );
-
-                    document.body.appendChild(heart);
-
-                    window.setTimeout(() => heart.remove(), 4500);
-                }, i * 65);
-            }
-        });
-    }
-
-    // Hiệu ứng các trái tim bung ra từ phong bì
-    const giftButton = document.getElementById("open-gift-btn");
-    const envelope = document.getElementById("envelope");
-    const burstContainer = document.getElementById("hearts-burst");
-
-    if (giftButton && envelope && burstContainer) {
-        giftButton.addEventListener("click", () => {
-            envelope.classList.add("open");
-
-            const hearts = ["♥", "♡", "💗", "✧"];
-
-            for (let i = 0; i < 18; i++) {
-                const heart = document.createElement("span");
-                const angle = (Math.PI * 2 * i) / 18;
-                const distance = 65 + Math.random() * 90;
-
-                heart.className = "burst-heart";
-                heart.textContent =
-                    hearts[Math.floor(Math.random() * hearts.length)];
-
-                heart.style.setProperty(
-                    "--x",
-                    Math.cos(angle) * distance + "px"
-                );
-                heart.style.setProperty(
-                    "--y",
-                    Math.sin(angle) * distance + "px"
-                );
-                heart.style.setProperty(
-                    "--rotate",
-                    (Math.random() * 70 - 35) + "deg"
-                );
-
-                burstContainer.appendChild(heart);
-
-                window.setTimeout(() => heart.remove(), 1600);
-            }
-        });
-    }
-
-    // Xuất hiện nhẹ nhàng khi cuộn tới từng khu vực
-    const revealItems = document.querySelectorAll(
-        ".love-timer-card, .photo-gallery, " +
-        ".wishes-section, .footer"
-    );
-
-    if ("IntersectionObserver" in window) {
-        revealItems.forEach(item => item.classList.add("reveal"));
-
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add("visible");
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.12
-        });
-
-        revealItems.forEach(item => observer.observe(item));
-    }
-})();
