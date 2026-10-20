@@ -635,9 +635,14 @@ a {
     margin-bottom: 25px;
 }
 
+
+/* =========================================
+   PHOTO GALLERY — ẢNH VỪA KHUNG
+========================================= */
+
 .carousel {
     position: relative;
-    width: min(340px, 80vw);
+    width: min(340px, 85vw);
     aspect-ratio: 4 / 5;
     margin: 0 auto 20px;
 }
@@ -645,14 +650,26 @@ a {
 .slide {
     position: absolute;
     inset: 0;
-    background: #ffffff;
+    width: 100%;
+    height: 100%;
     padding: 10px 10px 16px;
-    border-radius: 8px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #fff;
+    border-radius: 10px;
     box-shadow: 0 15px 40px rgba(214, 110, 138, 0.2);
+
     opacity: 0;
     visibility: hidden;
     transform: scale(0.95) rotate(1deg);
-    transition: opacity .6s ease, transform .6s ease, visibility .6s ease;
+    transition:
+        opacity .6s ease,
+        transform .6s ease,
+        visibility .6s ease;
+    overflow: hidden;
 }
 
 .slide.on {
@@ -661,28 +678,56 @@ a {
     transform: scale(1) rotate(0deg);
 }
 
+/* Khung ảnh cố định, không bị co giãn */
 .slide .mat {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #ffccd5;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: 5px;
+    background: #ffccd5;
 }
 
+/* Ảnh lấp đầy khung, không méo */
+.slide .mat img,
 .slide img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
+    object-position: center;
 }
 
+/* Chú thích luôn nằm gọn dưới ảnh */
 .slide figcaption {
-    margin-top: 12px;
+    flex-shrink: 0;
+    min-height: 30px;
+    margin-top: 8px;
+    text-align: center;
     font-family: "Dancing Script", cursive;
     color: var(--wine);
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: bold;
+    line-height: 1.4;
 }
+
+/* Điện thoại */
+@media (max-width: 600px) {
+    .carousel {
+        width: min(300px, 82vw);
+        aspect-ratio: 4 / 5;
+    }
+
+    .slide {
+        padding: 8px 8px 12px;
+    }
+
+    .slide figcaption {
+        font-size: 1.05rem;
+        margin-top: 6px;
+    }
+}
+
 
 .dots {
     display: flex;
