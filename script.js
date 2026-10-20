@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ==================== CẤU HÌNH ==================== */
   const CONFIG = {
     loveStartDate: '2026-04-10T00:00:00',   // ngày bắt đầu yêu
-    recipientName: 'Thúy Hường',
+    recipientName: 'Hường yêu ơi là yêu',
     senderName: 'Sơn'
   };
 
