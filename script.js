@@ -1,6 +1,6 @@
 /**
  * Website chúc mừng 20/10 — dành tặng Thúy Hường từ Sơn
- * Phong cách sang trọng, các tab tự động chạy.
+ * Phong cách sang trọng, các tab tự động chạy mượt mà trên iPhone & Web Online.
  */
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -11,27 +11,21 @@ document.addEventListener('DOMContentLoaded', () => {
     senderName: 'Sơn'
   };
 
-  const $ = (s) => document.querySelector(s);
-  const $$ = (s) => [...document.querySelectorAll(s)];
+  const $ = (s) => document.querySelector(s); const $$ = (s) => [...document.querySelectorAll(s)];
   const rand = (a, b) => a + Math.random() * (b - a);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const welcome = $('#welcome-screen'), envelope = $('#envelope'), openBtn = $('#open-gift-btn');
   const stage = $('#main-content'), bgMusic = $('#bg-music'), musicBtn = $('#music-toggle-btn');
-  const pauseBtn = $('#pause-btn'), modal = $('#secret-modal');
-
-  /* ==================== CÁC TAB TỰ CHẠY ==================== */
-  const tabs = $$('.tab');
-  const navBtns = $$('#tabnav button');
-  const bars = $$('#tabnav .bar i');
+  const pauseBtn = $('#pause-btn'), modal = $('#secret-modal');    /* ==================== CÁC TAB TỰ CHẠY ==================== */ const tabs = $$('.tab');
+  const navBtns = $$('#tabnav button'); const bars = $$('#tabnav .bar i');
   const durs = tabs.map((t) => +t.dataset.dur || 8000);
-  const slides = $$('.slide');
-  const dots = $$('#dots i');
+  const slides = $$('.slide'); const dots = $$('#dots i');
   const GALLERY = 2;
 
   let cur = -1, elapsed = 0, last = 0, started = false;
   let userPaused = false;
-  const holds = new Set();           // 'hover', 'press', 'modal'
+  const holds = new Set();
   const isPaused = () => userPaused || holds.size > 0 || document.hidden;
 
   tabs.forEach((tab) => tab.querySelectorAll('.it').forEach((el, k) => el.style.setProperty('--k', k)));
@@ -77,19 +71,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') closeModal();
   });
 
-  // Giữ tay/di chuột vào thì tạm dừng, thả ra thì chạy tiếp
+  // Tạm dừng khi người dùng tương tác / đọc nội dung
   const tabsEl = $('#tabs');
   tabsEl.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') holds.add('hover'); });
   tabsEl.addEventListener('pointerleave', () => holds.delete('hover'));
   tabsEl.addEventListener('pointerdown', (e) => { if (!e.target.closest('button')) holds.add('press'); });
   ['pointerup', 'pointercancel'].forEach((ev) => addEventListener(ev, () => holds.delete('press')));
 
-  // Vuốt trái/phải để đổi tab
+  // Hỗ trợ vuốt màn hình di động chuyển tab
   let sx = 0, sy = 0, st = 0;
   tabsEl.addEventListener('touchstart', (e) => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); }, { passive: true });
   tabsEl.addEventListener('touchend', (e) => {
     const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 800) go(cur + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 800) go(cur + (dx < 0 ? 1 : -1));
   }, { passive: true });
 
   pauseBtn.addEventListener('click', () => {
@@ -113,29 +107,29 @@ document.addEventListener('DOMContentLoaded', () => {
       setTab(0);
       initLoveTimer();
       typeName();
-    }, 1500);
-    setTimeout(() => welcome.classList.add('hidden'), 2600);
+    }, 1400);
+    setTimeout(() => welcome.classList.add('hidden'), 2500);
   }
   envelope.addEventListener('click', openGift);
   envelope.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGift(); } });
   openBtn.addEventListener('click', openGift);
 
   function burstFromEnvelope() {
-    const box = $('#hearts-burst'), glyphs = ['♥', '♡', '✧', '◆'], n = 18;
+    const box = $('#hearts-burst'), glyphs = ['♥', '♡', '✧', '◆'], n = 16;
     for (let i = 0; i < n; i++) {
       const el = document.createElement('span');
-      const ang = (Math.PI * 2 * i) / n, dist = 70 + Math.random() * 90;
+      const ang = (Math.PI * 2 * i) / n, dist = 65 + Math.random() * 80;
       el.className = 'burst-heart';
       el.textContent = glyphs[i % glyphs.length];
       el.style.setProperty('--x', Math.cos(ang) * dist + 'px');
       el.style.setProperty('--y', Math.sin(ang) * dist + 'px');
-      el.style.setProperty('--rot', rand(-35, 35) + 'deg');
+      el.style.setProperty('--rotate', rand(-30, 30) + 'deg');
       box.appendChild(el);
-      setTimeout(() => el.remove(), 1600);
+      setTimeout(() => el.remove(), 1500);
     }
   }
 
-  /* ==================== NHẠC ==================== */
+  /* ==================== NHẠC NỀN ==================== */
   function playAudio() {
     bgMusic.volume = 0;
     bgMusic.play().then(() => {
@@ -149,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else { bgMusic.pause(); musicBtn.classList.remove('playing'); }
   });
 
-  /* ==================== TÊN GÕ CHỮ ==================== */
+  /* ==================== HIỆU ỨNG GÕ TÊN ==================== */
   function typeName() {
     const el = $('#typewriter-name');
     if (reduce) return;
@@ -158,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.style.minHeight = '1.1em';
     let i = 0;
     const tick = () => { el.textContent = full.slice(0, ++i); if (i < full.length) setTimeout(tick, 110); };
-    setTimeout(tick, 900);
+    setTimeout(tick, 800);
   }
 
   /* ==================== ĐỒNG HỒ TÌNH YÊU ==================== */
@@ -183,26 +177,26 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#close-modal-btn').addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-  /* ==================== GỬI TRÁI TIM ==================== */
+  /* ==================== GỬI TRÁI TIM (NÚT BẤM) ==================== */
   $('#send-love-btn').addEventListener('click', () => {
     if (reduce) return;
-    const total = innerWidth < 600 ? 18 : 30, glyphs = ['♥', '♡', '♥', '✧'];
+    const total = innerWidth < 600 ? 16 : 26, glyphs = ['♥', '♡', '♥', '✧'];
     for (let i = 0; i < total; i++) {
       setTimeout(() => {
         const el = document.createElement('span');
-        el.className = 'floating-heart' + (i % 3 === 0 ? ' rose' : '');
+        el.className = 'floating-heart';
         el.textContent = glyphs[i % glyphs.length];
-        el.style.left = rand(2, 96) + 'vw';
-        el.style.fontSize = rand(16, 34) + 'px';
-        el.style.animationDuration = rand(2.4, 4) + 's';
-        el.style.setProperty('--drift', rand(-80, 80) + 'px');
+        el.style.left = rand(5, 95) + 'vw';
+        el.style.fontSize = rand(16, 30) + 'px';
+        el.style.animationDuration = rand(2.2, 3.8) + 's';
+        el.style.setProperty('--drift', rand(-70, 70) + 'px');
         document.body.appendChild(el);
-        setTimeout(() => el.remove(), 4500);
-      }, i * 70);
+        setTimeout(() => el.remove(), 4000);
+      }, i * 65);
     }
   });
 
-  /* ==================== BỤI VÀNG & CÁNH HOA (canvas) ==================== */
+  /* ==================== BỤI VÀNG & CÁNH HOA (CANVAS) ==================== */
   if (reduce) return;
   const cv = $('#particles-canvas'), ctx = cv.getContext('2d');
   const mobile = innerWidth < 640;
@@ -233,8 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const makeDust = (init) => ({ kind: 0, x: rand(0, W), y: init ? rand(0, H) : H + 20 * dpr, s: rand(5, 14) * dpr, vy: -rand(.12, .4) * dpr, ph: rand(0, 6.28), tw: rand(.0008, .002), a: rand(.35, .85) });
   const makePetal = (init) => ({ kind: 1, spr: petalSprites[Math.floor(rand(0, 3))], x: rand(0, W), y: init ? rand(-H, H) : -rand(30, 90) * dpr,
     s: rand(12, 22) * dpr, vy: rand(.45, 1) * dpr, sway: rand(.0008, .0018), ph: rand(0, 6.28), amp: rand(.3, .9) * dpr, rot: rand(0, 6.28), vr: rand(-.01, .01), flip: rand(0, 6.28), vf: rand(.01, .025), a: rand(.35, .7) });
-  const dust = Array.from({ length: mobile ? 16 : 34 }, () => makeDust(true));
-  const petals = Array.from({ length: mobile ? 8 : 16 }, () => makePetal(true));
+  const dust = Array.from({ length: mobile ? 14 : 30 }, () => makeDust(true));
+  const petals = Array.from({ length: mobile ? 7 : 14 }, () => makePetal(true));
 
   const loop = (t) => {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
